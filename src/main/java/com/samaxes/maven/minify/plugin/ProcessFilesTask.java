@@ -170,8 +170,7 @@ public abstract class ProcessFilesTask implements Callable<Object> {
                 } else {
                     File mergedFile = new File(targetDir, (nosuffix) ? mergedFilename + TEMP_SUFFIX : mergedFilename);
                     merge(mergedFile);
-                    File minifiedFile = new File(targetDir, (nosuffix) ? mergedFilename
-                            : FileUtils.removeExtension(mergedFilename) + suffix + "." + FileUtils.extension(mergedFilename));
+                    File minifiedFile = new File(targetDir, (nosuffix) ? mergedFilename : FileUtils.removeExtension(mergedFilename) + suffix + "." + FileUtils.extension(mergedFilename));
                     minify(mergedFile, minifiedFile);
                     if (nosuffix) {
                         if (!mergedFile.delete()) {
@@ -305,12 +304,7 @@ public abstract class ProcessFilesTask implements Callable<Object> {
                 includedFiles.add(new File(sourceDir, includedFilename));
             }
 
-            Collections.sort(includedFiles, new Comparator<File>() {
-                @Override
-                public int compare(File o1, File o2) {
-                    return o1.getName().compareToIgnoreCase(o2.getName());
-                }
-            });
+            includedFiles.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
         }
 
         return includedFiles;

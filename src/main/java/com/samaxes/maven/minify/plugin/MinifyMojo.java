@@ -63,6 +63,10 @@ public class MinifyMojo extends AbstractMojo {
         CLOSURE
     }
 
+    public enum Mode {
+        PARALLEL, SEQUENTIAL
+    }
+
     /* ************** */
     /* Global Options */
     /* ************** */
@@ -434,6 +438,17 @@ public class MinifyMojo extends AbstractMojo {
     private HashMap<String, String> closureDefine;
 
     /**
+     * Processing mode.
+     * Possible values are:
+     * <ul>
+     * <li>{@code PARALLEL}: files processing will be run in parallel mode</li>
+     * <li>{@code SEQUENTIAL}: files processing will be run in sequential mode </li>
+     * </ul>
+     */
+    @Parameter(defaultValue = "PARALLEL")
+    private Mode mode;
+
+    /**
      * Executed when the goal is invoked, it will first invoke a parallel lifecycle, ending at the given phase.
      */
     @Override
@@ -454,7 +469,7 @@ public class MinifyMojo extends AbstractMojo {
             throw new MojoFailureException(e.getMessage(), e);
         }
 
-        ExecutorService executor = Executors.newFixedThreadPool(processFilesTasks.size());
+        ExecutorService executor = Mode.PARALLEL == mode ? Executors.newFixedThreadPool(processFilesTasks.size()) : Executors.newSingleThreadExecutor();
         try {
             List<Future<Object>> futures = executor.invokeAll(processFilesTasks);
             for (Future<Object> future : futures) {
@@ -488,8 +503,7 @@ public class MinifyMojo extends AbstractMojo {
     }
 
     private ClosureConfig fillClosureConfig() throws MojoFailureException {
-        DependencyOptions dependencyOptions = new DependencyOptions();
-        dependencyOptions.setDependencySorting(closureSortDependencies);
+        DependencyOptions dependencyOptions = closureSortDependencies ? DependencyOptions.sortOnly() : DependencyOptions.none();
 
         List<SourceFile> externs = new ArrayList<>();
         for (String extern : closureExterns) {
@@ -497,9 +511,8 @@ public class MinifyMojo extends AbstractMojo {
         }
 
         Map<DiagnosticGroup, CheckLevel> warningLevels = new HashMap<>();
-        DiagnosticGroups diagnosticGroups = new DiagnosticGroups();
         for (Map.Entry<String, String> warningLevel : closureWarningLevels.entrySet()) {
-            DiagnosticGroup diagnosticGroup = diagnosticGroups.forName(warningLevel.getKey());
+            DiagnosticGroup diagnosticGroup = DiagnosticGroups.forName(warningLevel.getKey());
             if (diagnosticGroup == null) {
                 throw new MojoFailureException("Failed to process closureWarningLevels: " + warningLevel.getKey() + " is an invalid DiagnosticGroup");
             }
@@ -517,50 +530,41 @@ public class MinifyMojo extends AbstractMojo {
                 closureExtraAnnotations, closureDefine);
     }
 
-    private Collection<ProcessFilesTask> createTasks(YuiConfig yuiConfig, ClosureConfig closureConfig)
-            throws MojoFailureException, FileNotFoundException {
+    private Collection<ProcessFilesTask> createTasks(YuiConfig yuiConfig, ClosureConfig closureConfig) throws MojoFailureException, FileNotFoundException {
         List<ProcessFilesTask> tasks = newArrayList();
 
         if (!Strings.isNullOrEmpty(bundleConfiguration)) { // If a bundleConfiguration is defined, attempt to use that
             AggregationConfiguration aggregationConfiguration;
             try (Reader bundleConfigurationReader = new FileReader(bundleConfiguration)) {
-                aggregationConfiguration = new Gson().fromJson(bundleConfigurationReader,
-                        AggregationConfiguration.class);
+                aggregationConfiguration = new Gson().fromJson(bundleConfigurationReader, AggregationConfiguration.class);
             } catch (IOException e) {
-                throw new MojoFailureException("Failed to open the bundle configuration file [" + bundleConfiguration
-                        + "].", e);
+                throw new MojoFailureException("Failed to open the bundle configuration file [" + bundleConfiguration + "].", e);
             }
 
             for (Aggregation aggregation : aggregationConfiguration.getBundles()) {
                 if (Aggregation.AggregationType.css.equals(aggregation.getType())) {
-                    tasks.add(createCSSTask(yuiConfig, closureConfig, aggregation.getFiles(),
-                            Collections.<String>emptyList(), Collections.<String>emptyList(), aggregation.getName()));
+                    tasks.add(createCSSTask(yuiConfig, closureConfig, aggregation.getFiles(), Collections.emptyList(), Collections.emptyList(), aggregation.getName()));
                 } else if (Aggregation.AggregationType.js.equals(aggregation.getType())) {
-                    tasks.add(createJSTask(yuiConfig, closureConfig, aggregation.getFiles(),
-                            Collections.<String>emptyList(), Collections.<String>emptyList(), aggregation.getName()));
+                    tasks.add(createJSTask(yuiConfig, closureConfig, aggregation.getFiles(), Collections.emptyList(), Collections.emptyList(), aggregation.getName()));
                 }
             }
         } else { // Otherwise, fallback to the default behavior
-            tasks.add(createCSSTask(yuiConfig, closureConfig, cssSourceFiles, cssSourceIncludes, cssSourceExcludes,
-                    cssFinalFile));
-            tasks.add(createJSTask(yuiConfig, closureConfig, jsSourceFiles, jsSourceIncludes, jsSourceExcludes,
-                    jsFinalFile));
+            tasks.add(createCSSTask(yuiConfig, closureConfig, cssSourceFiles, cssSourceIncludes, cssSourceExcludes, cssFinalFile));
+            tasks.add(createJSTask(yuiConfig, closureConfig, jsSourceFiles, jsSourceIncludes, jsSourceExcludes,jsFinalFile));
         }
 
         return tasks;
     }
 
-    private ProcessFilesTask createCSSTask(YuiConfig yuiConfig, ClosureConfig closureConfig,
-                                           List<String> cssSourceFiles, List<String> cssSourceIncludes, List<String> cssSourceExcludes,
-                                           String cssFinalFile) throws FileNotFoundException {
+    private ProcessFilesTask createCSSTask(YuiConfig yuiConfig, ClosureConfig closureConfig, List<String> cssSourceFiles,
+                                           List<String> cssSourceIncludes, List<String> cssSourceExcludes, String cssFinalFile) throws FileNotFoundException {
         return new ProcessCSSFilesTask(getLog(), verbose, bufferSize, Charset.forName(charset), suffix, nosuffix,
                 skipMerge, skipMinify, webappSourceDir, webappTargetDir, cssSourceDir, cssSourceFiles,
                 cssSourceIncludes, cssSourceExcludes, cssTargetDir, cssFinalFile, cssEngine, yuiConfig);
     }
 
     private ProcessFilesTask createJSTask(YuiConfig yuiConfig, ClosureConfig closureConfig, List<String> jsSourceFiles,
-                                          List<String> jsSourceIncludes, List<String> jsSourceExcludes, String jsFinalFile)
-            throws FileNotFoundException {
+                                          List<String> jsSourceIncludes, List<String> jsSourceExcludes, String jsFinalFile) throws FileNotFoundException {
         return new ProcessJSFilesTask(getLog(), verbose, bufferSize, Charset.forName(charset), suffix, nosuffix,
                 skipMerge, skipMinify, webappSourceDir, webappTargetDir, jsSourceDir, jsSourceFiles, jsSourceIncludes,
                 jsSourceExcludes, jsTargetDir, jsFinalFile, jsEngine, yuiConfig, closureConfig);

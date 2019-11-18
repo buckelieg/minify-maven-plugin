@@ -137,8 +137,8 @@ public class ProcessJSFilesTask extends ProcessFilesTask {
                     compiler.compile(externs, Lists.newArrayList(input), options);
 
                     // Check for errors.
-                    JSError[] errors = compiler.getErrors();
-                    if (errors.length > 0) {
+                    List<JSError> errors = compiler.getErrors();
+                    if (errors.size() > 0) {
                         StringBuilder msg = new StringBuilder("JSCompiler errors\n");
                         MessageFormatter formatter = new LightweightMessageFormatter(compiler);
                         for (JSError e : errors) {
