@@ -1,4 +1,4 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.samaxes.maven/minify-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.samaxes.maven/minify-maven-plugin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.buckelieg/minify-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.buckelieg/minify-maven-plugin)
 [![Build Status](https://travis-ci.org/samaxes/minify-maven-plugin.png)](https://travis-ci.org/samaxes/minify-maven-plugin)
 
 # Minify Maven Plugin
