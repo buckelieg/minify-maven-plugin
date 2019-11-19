@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.buckelieg.minify.plugin.MinifyMojo.Engine.CLOSURE;
+import static com.github.buckelieg.minify.plugin.MinifyMojo.Engine.YUI;
+
 /**
  * Task for merging and compressing JavaScript files.
  */
@@ -98,7 +101,7 @@ public class ProcessJSFilesTask extends ProcessFilesTask {
             log.info("Creating the minified file [" + (verbose ? minifiedFile.getPath() : minifiedFile.getName()) + "].");
 
             switch (engine) {
-                case MinifyMojo.Engine.CLOSURE:
+                case CLOSURE:
                     log.debug("Using Google Closure Compiler engine.");
 
                     CompilerOptions options = new CompilerOptions();
@@ -161,7 +164,7 @@ public class ProcessJSFilesTask extends ProcessFilesTask {
                     }
 
                     break;
-                case MinifyMojo.Engine.YUI:
+                case YUI:
                     log.debug("Using YUI Compressor engine.");
 
                     JavaScriptCompressor compressor = new JavaScriptCompressor(reader, new JavaScriptErrorReporter(log,
