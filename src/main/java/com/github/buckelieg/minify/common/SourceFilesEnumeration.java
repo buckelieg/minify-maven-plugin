@@ -20,10 +20,7 @@ package com.github.buckelieg.minify.common;
 
 import org.apache.maven.plugin.logging.Log;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -38,6 +35,8 @@ public class SourceFilesEnumeration implements Enumeration<InputStream> {
     private List<File> files;
 
     private int current = 0;
+
+    private boolean appendEOL;
 
     /**
      * Enumeration public constructor.
@@ -74,20 +73,23 @@ public class SourceFilesEnumeration implements Enumeration<InputStream> {
     @Override
     public InputStream nextElement() {
         InputStream is;
-
         if (!hasMoreElements()) {
             throw new NoSuchElementException("No more files!");
         } else {
-            File nextElement = files.get(current);
-            current++;
-
-            try {
-                is = new FileInputStream(nextElement);
-            } catch (FileNotFoundException e) {
-                throw new NoSuchElementException("The path [" + nextElement.getPath() + "] cannot be found.");
+            if (appendEOL) {
+                is = new ByteArrayInputStream(System.lineSeparator().getBytes());
+                appendEOL = false;
+            } else {
+                File nextElement = files.get(current);
+                current++;
+                try {
+                    is = new FileInputStream(nextElement);
+                    appendEOL = true;
+                } catch (FileNotFoundException e) {
+                    throw new NoSuchElementException("The path [" + nextElement.getPath() + "] cannot be found.");
+                }
             }
         }
-
         return is;
     }
 }
