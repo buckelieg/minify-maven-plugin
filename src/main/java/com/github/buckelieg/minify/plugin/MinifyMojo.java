@@ -131,12 +131,12 @@ public class MinifyMojo extends AbstractMojo {
     private boolean skipMinify;
 
     /**
-     * Skip errors (of JS/CSS validation tasks)
+     * Skip errors (of CLOSURE JS/CSS validation tasks)
      *
      * @since 1.5.2
      */
-    @Parameter(property = "skipErrors", defaultValue = "false")
-    private boolean skipErrors;
+    @Parameter(property = "closureSkipErrors", defaultValue = "false")
+    private boolean closureSkipErrors;
 
     /**
      * Webapp source directory.
@@ -571,14 +571,14 @@ public class MinifyMojo extends AbstractMojo {
     private ProcessFilesTask createCSSTask(YuiConfig yuiConfig, ClosureConfig closureConfig, List<String> cssSourceFiles,
                                            List<String> cssSourceIncludes, List<String> cssSourceExcludes, String cssFinalFile) throws FileNotFoundException {
         return new ProcessCSSFilesTask(getLog(), verbose, bufferSize, Charset.forName(charset), suffix, nosuffix,
-                skipMerge, skipMinify, skipErrors, webappSourceDir, webappTargetDir, cssSourceDir, cssSourceFiles,
+                skipMerge, skipMinify, closureSkipErrors, webappSourceDir, webappTargetDir, cssSourceDir, cssSourceFiles,
                 cssSourceIncludes, cssSourceExcludes, cssTargetDir, cssFinalFile, cssEngine, yuiConfig);
     }
 
     private ProcessFilesTask createJSTask(YuiConfig yuiConfig, ClosureConfig closureConfig, List<String> jsSourceFiles,
                                           List<String> jsSourceIncludes, List<String> jsSourceExcludes, String jsFinalFile) throws FileNotFoundException {
         return new ProcessJSFilesTask(getLog(), verbose, bufferSize, Charset.forName(charset), suffix, nosuffix,
-                skipMerge, skipMinify, skipErrors, webappSourceDir, webappTargetDir, jsSourceDir, jsSourceFiles, jsSourceIncludes,
+                skipMerge, skipMinify, closureSkipErrors, webappSourceDir, webappTargetDir, jsSourceDir, jsSourceFiles, jsSourceIncludes,
                 jsSourceExcludes, jsTargetDir, jsFinalFile, jsEngine, yuiConfig, closureConfig);
     }
 }
