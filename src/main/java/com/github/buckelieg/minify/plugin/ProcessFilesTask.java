@@ -55,6 +55,8 @@ public abstract class ProcessFilesTask implements Callable<Object> {
 
     protected final boolean skipMinify;
 
+    protected final boolean skipErrors;
+
     protected final MinifyMojo.Engine engine;
 
     protected final YuiConfig yuiConfig;
@@ -83,6 +85,7 @@ public abstract class ProcessFilesTask implements Callable<Object> {
      * @param nosuffix        whether to use a suffix for the minified file name or not
      * @param skipMerge       whether to skip the merge step or not
      * @param skipMinify      whether to skip the minify step or not
+     * @param skipErrors      whether to skip errors or not
      * @param webappSourceDir web resources source directory
      * @param webappTargetDir web resources target directory
      * @param inputDir        directory containing source files
@@ -96,7 +99,7 @@ public abstract class ProcessFilesTask implements Callable<Object> {
      * @throws FileNotFoundException when the given source file does not exist
      */
     public ProcessFilesTask(Log log, boolean verbose, Integer bufferSize, Charset charset, String suffix,
-                            boolean nosuffix, boolean skipMerge, boolean skipMinify, String webappSourceDir,
+                            boolean nosuffix, boolean skipMerge, boolean skipErrors, boolean skipMinify, String webappSourceDir,
                             String webappTargetDir, String inputDir, List<String> sourceFiles,
                             List<String> sourceIncludes, List<String> sourceExcludes, String outputDir,
                             String outputFilename, MinifyMojo.Engine engine, YuiConfig yuiConfig) throws FileNotFoundException {
@@ -108,6 +111,7 @@ public abstract class ProcessFilesTask implements Callable<Object> {
         this.nosuffix = nosuffix;
         this.skipMerge = skipMerge;
         this.skipMinify = skipMinify;
+        this.skipErrors = skipErrors;
         this.engine = engine;
         this.yuiConfig = yuiConfig;
 

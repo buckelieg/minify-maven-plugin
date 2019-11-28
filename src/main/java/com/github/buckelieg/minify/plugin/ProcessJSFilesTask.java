@@ -55,6 +55,7 @@ public class ProcessJSFilesTask extends ProcessFilesTask {
      * @param nosuffix        whether to use a suffix for the minified file name or not
      * @param skipMerge       whether to skip the merge step or not
      * @param skipMinify      whether to skip the minify step or not
+     * @param skipErrors      whether to skip errors or not
      * @param webappSourceDir web resources source directory
      * @param webappTargetDir web resources target directory
      * @param inputDir        directory containing source files
@@ -69,12 +70,12 @@ public class ProcessJSFilesTask extends ProcessFilesTask {
      * @throws FileNotFoundException when the given source file does not exist
      */
     public ProcessJSFilesTask(Log log, boolean verbose, Integer bufferSize, Charset charset, String suffix,
-                              boolean nosuffix, boolean skipMerge, boolean skipMinify, String webappSourceDir,
+                              boolean nosuffix, boolean skipMerge, boolean skipMinify, boolean skipErrors, String webappSourceDir,
                               String webappTargetDir, String inputDir, List<String> sourceFiles,
                               List<String> sourceIncludes, List<String> sourceExcludes, String outputDir,
                               String outputFilename, MinifyMojo.Engine engine, YuiConfig yuiConfig, ClosureConfig closureConfig)
             throws FileNotFoundException {
-        super(log, verbose, bufferSize, charset, suffix, nosuffix, skipMerge, skipMinify, webappSourceDir,
+        super(log, verbose, bufferSize, charset, suffix, nosuffix, skipMerge, skipMinify, skipErrors, webappSourceDir,
                 webappTargetDir, inputDir, sourceFiles, sourceIncludes, sourceExcludes, outputDir, outputFilename,
                 engine, yuiConfig);
 
@@ -139,14 +140,16 @@ public class ProcessJSFilesTask extends ProcessFilesTask {
                     compiler.compile(externs, Lists.newArrayList(input), options);
 
                     // Check for errors.
-                    List<JSError> errors = compiler.getErrors();
-                    if (errors.size() > 0) {
-                        StringBuilder msg = new StringBuilder("JSCompiler errors\n");
-                        MessageFormatter formatter = new LightweightMessageFormatter(compiler);
-                        for (JSError e : errors) {
-                            msg.append(formatter.formatError(e));
+                    if(!skipErrors) {
+                        List<JSError> errors = compiler.getErrors();
+                        if (errors.size() > 0) {
+                            StringBuilder msg = new StringBuilder("JSCompiler errors\n");
+                            MessageFormatter formatter = new LightweightMessageFormatter(compiler);
+                            for (JSError e : errors) {
+                                msg.append(formatter.formatError(e));
+                            }
+                            throw new RuntimeException(msg.toString());
                         }
-                        throw new RuntimeException(msg.toString());
                     }
 
                     writer.append(compiler.toSource());
@@ -167,10 +170,8 @@ public class ProcessJSFilesTask extends ProcessFilesTask {
                 case YUI:
                     log.debug("Using YUI Compressor engine.");
 
-                    JavaScriptCompressor compressor = new JavaScriptCompressor(reader, new JavaScriptErrorReporter(log,
-                            mergedFile.getName()));
-                    compressor.compress(writer, yuiConfig.getLineBreak(), yuiConfig.isMunge(), verbose,
-                            yuiConfig.isPreserveSemicolons(), yuiConfig.isDisableOptimizations());
+                    JavaScriptCompressor compressor = new JavaScriptCompressor(reader, new JavaScriptErrorReporter(log, mergedFile.getName()));
+                    compressor.compress(writer, yuiConfig.getLineBreak(), yuiConfig.isMunge(), verbose, yuiConfig.isPreserveSemicolons(), yuiConfig.isDisableOptimizations());
                     break;
                 default:
                     log.warn("JavaScript engine not supported.");
