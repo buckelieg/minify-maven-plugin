@@ -454,7 +454,7 @@ public class MinifyMojo extends AbstractMojo {
      * </ul>
      */
     @Parameter(defaultValue = "PARALLEL")
-    private Mode mode;
+    private Mode executionMode;
 
     /**
      * Executed when the goal is invoked, it will first invoke a parallel lifecycle, ending at the given phase.
@@ -477,7 +477,7 @@ public class MinifyMojo extends AbstractMojo {
             throw new MojoFailureException(e.getMessage(), e);
         }
 
-        ExecutorService executor = Mode.PARALLEL == mode ? Executors.newFixedThreadPool(processFilesTasks.size()) : Executors.newSingleThreadExecutor();
+        ExecutorService executor = Mode.PARALLEL == executionMode ? Executors.newFixedThreadPool(processFilesTasks.size()) : Executors.newSingleThreadExecutor();
         try {
             List<Future<Object>> futures = executor.invokeAll(processFilesTasks);
             for (Future<Object> future : futures) {
