@@ -318,22 +318,30 @@ public class MinifyMojo extends AbstractMojo {
      * <li>{@code ECMASCRIPT3}: Checks code assuming ECMAScript 3 compliance, and gives errors for code using features only present in later versions of ECMAScript.</li>
      * <li>{@code ECMASCRIPT5}: Checks code assuming ECMAScript 5 compliance, allowing new features not present in ECMAScript 3, and gives errors for code using features only present in later versions of ECMAScript.</li>
      * <li>{@code ECMASCRIPT5_STRICT}: Like {@code ECMASCRIPT5} but assumes compliance with strict mode ({@code 'use strict';}).</li>
-     * <li>{@code ECMASCRIPT6}: Checks code assuming ECMAScript 6 compliance, allowing new features not present in ECMAScript 5.</li>
-     * <li>{@code ECMASCRIPT6_STRICT}: Like {@code ECMASCRIPT6} but assumes compliance with strict mode ({@code 'use strict';}).</li>
+     * <li>{@code ECMASCRIPT_2015}: ECMAScript standard approved in 2015.</li>
+     * <li>{@code ECMASCRIPT6_TYPED}: A superset of ES6 which adds Typescript-style type declarations. Always strict.</li>
+     * <li>{@code ECMASCRIPT_2016}: ECMAScript standard approved in 2016. Adds the exponent operator (**).</li>
+     * <li>{@code ECMASCRIPT_2017}: ECMAScript standard approved in 2017. Adds async/await and other syntax.</li>
+     * <li>{@code ECMASCRIPT_2018}: ECMAScript standard approved in 2018. Adds "..." in object literals/patterns.</li>
+     * <li>{@code ECMASCRIPT_2019}: ECMAScript standard approved in 2019. Adds catch blocks with no error binding.</li>
+     * <li>{@code ECMASCRIPT_NEXT}: ECMAScript latest draft standard..</li>
+     * <li>{@code STABLE} (default value): Use stable features.</li>
+     * <li>{@code NO_TRANSPILE}: For languageOut only. The same language mode as the input.</li>
+     * <li>{@code UNSUPPORTED}: For testing only. Features that can be parsed but cannot be understood by the rest of the compiler yet.</li>
      * </ul>
      *
      * @since 1.7.2
      */
-    @Parameter(property = "closureLanguageIn", defaultValue = "ECMASCRIPT6")
+    @Parameter(property = "closureLanguageIn", defaultValue = "STABLE")
     private String closureLanguageIn;
 
     /**
      * Refers to which version of ECMAScript your code will be returned in.<br/>
      * It accepts the same options as {@code closureLanguageIn} and is used to transpile between different levels of ECMAScript.
-     *
+     * Defaults to: {@code NO_TRANSPILE}
      * @since 1.7.5
      */
-    @Parameter(property = "closureLanguageOut", defaultValue = "ECMASCRIPT5")
+    @Parameter(property = "closureLanguageOut", defaultValue = "NO_TRANSPILE")
     private String closureLanguageOut;
 
     /**
